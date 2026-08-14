@@ -20,6 +20,9 @@ type Game = {
 };
 
 const siteUrl = "https://beatballot.space";
+const capacityProtectionCode = "CAPACITY_PROTECTION";
+const capacityProtectionNotice = "THE ROOM IS BUSY. WE'RE PROTECTING THE TALLY. TRY AGAIN SHORTLY.";
+const tallyUnavailableNotice = "THE LIVE TAPE IS TEMPORARILY UNAVAILABLE. TRY AGAIN SHORTLY.";
 const homeLinks = [
   { href: "#arena", label: "ARENA" },
   { href: "/season-01", label: "SEASON" },
@@ -113,7 +116,7 @@ export function BallotExperience() {
   const [game, setGame] = useState<Game | null>(null);
   const [notice, setNotice] = useState("ONE VERIFIED BALLOT PER ROUND.");
   const [loading, setLoading] = useState(true);
-  const [tallyState, setTallyState] = useState<"live" | "busy" | "paused">("live");
+  const [tallyState, setTallyState] = useState<"live" | "capacity" | "paused">("live");
   const [previewRoundIndex, setPreviewRoundIndex] = useState(0);
   const [aliasOpen, setAliasOpen] = useState(false);
   const [alias, setAlias] = useState("");
@@ -129,15 +132,21 @@ export function BallotExperience() {
           setNotice("NO LIVE ROUND IS OPEN. CHECK THE SEASON REEL FOR WHAT'S NEXT.");
           return;
         }
-        setTallyState("busy");
-        setNotice("THE ROOM IS BUSY. WE'RE PROTECTING THE TALLY. TRY AGAIN SHORTLY.");
+        if ((data as GameError).code === capacityProtectionCode) {
+          setTallyState("capacity");
+          setNotice(capacityProtectionNotice);
+          return;
+        }
+        setTallyState("live");
+        setNotice(tallyUnavailableNotice);
         return;
       }
       setGame(data as Game);
       setTallyState("live");
+      setNotice((currentNotice) => currentNotice === capacityProtectionNotice ? "THE LIVE TAPE IS BACK. THE ROOM IS OPEN." : currentNotice);
     } catch {
-      setTallyState("busy");
-      setNotice("THE ROOM IS BUSY. WE'RE PROTECTING THE TALLY. TRY AGAIN SHORTLY.");
+      setTallyState("live");
+      setNotice(tallyUnavailableNotice);
     } finally { setLoading(false); }
   }, []);
 
@@ -178,9 +187,13 @@ export function BallotExperience() {
     setSubmitting(true); setNotice("SEALING YOUR VERIFIED BALLOT…");
     try {
       const response = await fetch("/api/vote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ roundId: round.id, songId: song.id }) });
-      const data = await response.json() as { error?: string };
+      const data = await response.json() as GameError;
       if (!response.ok) {
-        if (response.status >= 500) setTallyState("busy");
+        if (data.code === capacityProtectionCode) {
+          setTallyState("capacity");
+          setNotice(capacityProtectionNotice);
+          return;
+        }
         throw new Error(data.error || "Could not record your ballot.");
       }
       setNotice(`${song.title.toUpperCase()} IS ON THE TAPE. THE ROOM IS OPEN.`); await loadGame();
@@ -208,7 +221,7 @@ export function BallotExperience() {
   const changePreview = (direction: number) => setPreviewRoundIndex((index) => (index + direction + battleRounds.length) % battleRounds.length);
   const headerStatus = loading
     ? "LOADING LIVE TAPE"
-    : tallyState === "busy"
+    : tallyState === "capacity"
       ? "TALLY PROTECTION ACTIVE"
       : tallyState === "paused"
         ? "NO LIVE ROUND"
@@ -221,7 +234,7 @@ export function BallotExperience() {
     <header className="site-header"><a className="wordmark" href="#top" aria-label="Beat Ballot home">BEAT<br />BALLOT<span>.</span></a><div className="header-status"><span className="status-led" /><span>{headerStatus}</span></div><nav aria-label="Primary navigation"><a href="#arena">ARENA</a><Link href="/season-01">SEASON</Link><Link href="/catalogue">INDEX</Link><Link href="/method">METHOD</Link>{game?.viewer.signedIn ? <button className="nav-button" onClick={() => void signOut()}>SIGN OUT</button> : <Link href="/auth/sign-in?returnTo=/#arena">SIGN IN</Link>}</nav><MobileNav items={homeLinks} signedIn={Boolean(game?.viewer.signedIn)} onSignOut={() => void signOut()} /></header>
     <section className="hero" id="top"><RecordIndexArt round={previewRound} /><div className="hero__meta"><span>NIGERIA / 2026</span><span>SEASON 01</span></div><p className="kicker">A FAN-LED CULTURAL EXPERIMENT</p><h1><span className="hero-word">HIT</span><span className="hero-slash">{"//"}</span><span className="hero-word">FOR</span><span className="hero-slash">{"//"}</span><span className="hero-word">HIT</span></h1><div className="hero__proof"><span>THE CULTURE VOTES.</span><strong>ONE PICK.<br />REAL IMPACT.<br />EVERY ROUND.</strong><small>NOT AN OFFICIAL<br />ARTIST BATTLE.</small></div><BulletinTape /><div className="hero__season-reel" aria-label="Season 01 rotating matchup preview"><button aria-label="Show previous Season 01 round" onClick={() => changePreview(-1)} type="button">←</button><div><span>SEASON 01 / ROTATING PREVIEW / {previewRound.number}</span><strong>{previewOlamide.title} <i>VS</i> {previewDavido.title}</strong></div><button aria-label="Show next Season 01 round" onClick={() => changePreview(1)} type="button">→</button></div><div className="hero__bottom"><p className="hero__statement">Two deep catalogues. No official fight. Just the songs people would go to war for.</p><div className="hero__actions"><a className="arrow-action" href="#arena">CAST YOUR PICK <span>↓</span></a><div className="share-tools"><a href={xShareUrl(landingShareText)} target="_blank" rel="noreferrer">POST TO X ↗</a><button onClick={() => void shareBallot(landingShareText)} type="button">SHARE ANYWHERE ↗</button></div></div></div><div className="hero__scoreline"><div><span>01</span> OLAMIDE</div><span className="scoreline-vs">VS</span><div>DAVIDO <span>02</span></div></div></section>
     <section className="statement-strip"><span>NO INDUSTRY PANEL.</span><span>NO FAN-WAR ALGORITHM.</span><span>JUST RECEIPTS, CONTEXT &amp; YOUR PICK.</span></section>
-    <section className="arena" id="arena"><div className="arena__heading"><div><p className="section-label">CURRENT BALLOT / {String(game?.round.number ?? 1).padStart(2, "0")} / 05</p><h2>{game?.round.title ?? round.title}</h2></div><div className="arena__prompt"><span>{game?.round.lens ?? round.lens}</span><p>{game?.round.prompt ?? round.prompt}</p></div></div><div className="song-grid"><SongCard song={getSong(round.olamideSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /><div className="versus-lockup" aria-hidden="true"><span>HIT</span><strong>VS</strong><span>HIT</span></div><SongCard song={getSong(round.davidoSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /></div><div className="ballot-notice" role="status"><span className="status-led" />{notice}</div>{tallyState === "busy" ? <div className="traffic-notice" role="status"><span className="status-led" /><p>THE ROOM IS BUSY. WE&apos;RE PROTECTING THE TALLY WHILE IT RECOVERS.</p><button onClick={() => void loadGame()} type="button">RETRY NOW ↗</button></div> : null}{game?.viewer.hasVoted ? <div className="share-tools share-tools--after"><a target="_blank" rel="noreferrer" href={xShareUrl(shareText)}>SHARE YOUR PICK ON X ↗</a><button onClick={() => void shareBallot(shareText)} type="button">SHARE YOUR PICK ↗</button></div> : null}{aliasOpen ? <form className="alias-form" onSubmit={saveAlias}><label htmlFor="fan-alias">CLAIM A PUBLIC FAN ALIAS <input id="fan-alias" value={alias} onChange={(event) => setAlias(event.target.value)} minLength={3} maxLength={24} required autoFocus placeholder="e.g. LAGOS TAPE" /></label><button className="pick-button" disabled={submitting}>SAVE ALIAS →</button></form> : null}</section>
+    <section className="arena" id="arena"><div className="arena__heading"><div><p className="section-label">CURRENT BALLOT / {String(game?.round.number ?? 1).padStart(2, "0")} / 05</p><h2>{game?.round.title ?? round.title}</h2></div><div className="arena__prompt"><span>{game?.round.lens ?? round.lens}</span><p>{game?.round.prompt ?? round.prompt}</p></div></div><div className="song-grid"><SongCard song={getSong(round.olamideSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /><div className="versus-lockup" aria-hidden="true"><span>HIT</span><strong>VS</strong><span>HIT</span></div><SongCard song={getSong(round.davidoSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /></div><div className="ballot-notice" role="status"><span className="status-led" />{notice}</div>{tallyState === "capacity" ? <div className="traffic-notice" role="status"><span className="status-led" /><p>THE ROOM IS BUSY. WE&apos;RE PROTECTING THE TALLY WHILE IT RECOVERS.</p><button onClick={() => void loadGame()} type="button">RETRY NOW ↗</button></div> : null}{game?.viewer.hasVoted ? <div className="share-tools share-tools--after"><a target="_blank" rel="noreferrer" href={xShareUrl(shareText)}>SHARE YOUR PICK ON X ↗</a><button onClick={() => void shareBallot(shareText)} type="button">SHARE YOUR PICK ↗</button></div> : null}{aliasOpen ? <form className="alias-form" onSubmit={saveAlias}><label htmlFor="fan-alias">CLAIM A PUBLIC FAN ALIAS <input id="fan-alias" value={alias} onChange={(event) => setAlias(event.target.value)} minLength={3} maxLength={24} required autoFocus placeholder="e.g. LAGOS TAPE" /></label><button className="pick-button" disabled={submitting}>SAVE ALIAS →</button></form> : null}</section>
     <section className="signal-grid"><RollingPicks events={game?.events ?? []} /><ResultsPanel game={game} /></section>
     <section className="method" id="method"><div className="method__lead"><p className="section-label">THE RECEIPTS</p><h2>Built to keep the argument honest.</h2></div><div className="method__rules"><article><span>01</span><h3>Match context, not hype.</h3><p>Rounds pair records by era, role and cultural job — not a made-up universal score.</p></article><article><span>02</span><h3>Features live in their own room.</h3><p>The main ballot counts lead and co-lead songs only. Features are retained as catalogue records, not main votes.</p></article><article><span>03</span><h3>Every song has a trail.</h3><p>Each index entry carries its year, credited role and a link to the source behind its context.</p></article><article><span>04</span><h3>Your pick earns the reveal.</h3><p>Public pace stays sealed before a verified vote, so the room does not choose for you.</p></article></div></section>
     <Catalogue />
