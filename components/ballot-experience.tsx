@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { battleRounds, currentRound, getSong, songs, type Artist, type BattleRound, type Song } from "@/data/ballot";
@@ -107,8 +108,7 @@ function BulletinTape() {
 }
 
 function RecordIndexArt({ round }: { round: BattleRound }) {
-  const number = round.number.slice(0, 2);
-  return <div className="record-index-art" aria-hidden="true"><div className="record-index-art__grooves" /><div className="record-index-art__label"><span>SIDE {number}</span><strong>BB—{number}</strong><span>33⅓</span></div><ol>{battleRounds.map((entry) => <li className={entry.id === round.id ? "is-current" : ""} key={entry.id}>{entry.number.slice(0, 2)}</li>)}</ol></div>;
+  return <div className="record-index-art" aria-hidden="true"><Image className="record-index-art__vinyl" src="/hero/vinyl-record.webp" alt="" fill priority sizes="(max-width: 760px) 190px, (max-width: 1100px) 46vw, 640px" /><ol>{battleRounds.map((entry) => <li className={entry.id === round.id ? "is-current" : ""} key={entry.id}>{entry.number.slice(0, 2)}</li>)}</ol></div>;
 }
 
 export function BallotExperience() {
