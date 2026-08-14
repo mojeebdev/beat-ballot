@@ -457,10 +457,19 @@ main {
 .fan-passport > p:not(.section-label) { color: var(--paper-dim); font-size: 19px; line-height: 1.15; margin: 0 0 30px; max-width: 520px; }
 
 /* StyleGraft bulletin-poster layer */
-.hero { min-height: min(900px, calc(100svh - 118px)); overflow: hidden; }
+.hero {
+  --hero-header-height: 118px;
+  --hero-strip-height: 44px;
+  height: min(760px, calc(100svh - var(--hero-header-height) - var(--hero-strip-height)));
+  max-height: calc(100svh - var(--hero-header-height) - var(--hero-strip-height));
+  min-height: 0;
+  overflow: hidden;
+  padding: clamp(22px, 3.5vh, 38px) clamp(20px, 4vw, 64px) 58px;
+}
 .hero::after { background: rgba(9, 21, 16, .66); content: ""; inset: 0 0 0 66%; pointer-events: none; position: absolute; }
 .hero__meta, .kicker, .hero h1, .hero__proof, .hero__bottom, .hero__scoreline, .bulletin-tape { position: relative; z-index: 2; }
-.hero h1 { display: grid; grid-template-columns: minmax(0, 1fr) auto; margin: clamp(30px, 6vh, 72px) 0 0 -.07em; max-width: min(66vw, 850px); white-space: normal; }
+.hero { display: flex; flex-direction: column; }
+.hero h1 { display: grid; font-size: clamp(74px, 11vw, 176px); grid-template-columns: minmax(0, 1fr) auto; line-height: .67; margin: clamp(14px, 2.5vh, 26px) 0 0 -.07em; max-width: min(64vw, 800px); white-space: normal; }
 .hero-word { display: block; }
 .hero-slash { align-self: center; color: var(--solar); font-family: var(--serif); font-size: .58em; font-style: italic; letter-spacing: -.12em; line-height: .7; padding-left: .02em; }
 .hero__proof { border-left: 1px solid var(--line); display: grid; gap: 18px; left: min(69vw, 930px); max-width: 230px; padding-left: 17px; position: absolute; top: clamp(165px, 25vh, 265px); }
@@ -478,13 +487,16 @@ main {
 .record-index-art ol { color: var(--solar); display: grid; font: 11px var(--mono); gap: 25px; list-style: none; margin: 0; padding: 0; position: absolute; right: 12%; top: 2%; }
 .record-index-art li { align-items: center; display: flex; gap: 12px; }
 .record-index-art li::after { background: var(--solar); content: ""; height: 1px; width: 12px; }
-.hero__bottom { margin-top: clamp(76px, 16vh, 190px); max-width: min(57vw, 690px); }
+.kicker { margin: clamp(16px, 3vh, 30px) 0 0; }
+.hero__bottom { margin-top: auto; max-width: min(57vw, 690px); padding-bottom: 4px; }
 .hero__statement { font-size: clamp(19px, 2vw, 29px); }
 
 .arena { background: var(--void-deep); position: relative; }
-.arena__heading { margin-bottom: 29px; }
-.song-grid { gap: 0; }
-.song-card, .song-card--olamide, .song-card--davido { background: var(--paper); color: var(--void-deep); min-height: 455px; }
+.arena { padding-bottom: clamp(42px, 5vw, 68px); padding-top: clamp(44px, 5vw, 72px); }
+.arena__heading { margin-bottom: 25px; }
+.arena h2 { font-size: clamp(38px, 4.7vw, 70px); }
+.song-grid { gap: 0; grid-template-columns: 1fr 64px 1fr; }
+.song-card, .song-card--olamide, .song-card--davido { background: var(--paper); color: var(--void-deep); min-height: 0; padding: clamp(18px, 2vw, 28px); }
 .song-card:hover { transform: none; }
 .song-card + .versus-lockup + .song-card { background: #e8dfbf; }
 .song-card__topline, .is-selected .song-card__topline { color: rgba(9,21,16,.64); }
@@ -496,10 +508,17 @@ main {
 .song-card--davido .pick-button { background: var(--orange); }
 .song-card--olamide .pick-button:hover, .song-card--davido .pick-button:hover { background: var(--void-deep); border-color: var(--void-deep); color: var(--paper); }
 .song-card.is-selected .pick-button { background: var(--void-deep); color: var(--paper); }
+.song-card__title-wrap { margin: 26px 0 18px; }
+.song-card h3 { font-size: clamp(46px, 5.3vw, 78px); line-height: .78; }
+.song-card__footer { margin: 20px 0 12px; }
+.song-card .pick-button { margin-top: 0; }
 .versus-lockup { background: var(--void-deep); }
 .versus-lockup::before, .versus-lockup::after { background: var(--solar); }
-.versus-lockup strong { font-size: 36px; }
+.versus-lockup strong { font-size: 30px; }
 .ballot-notice { border-bottom-color: var(--solar); }
+
+.site-header:not(.editorial-header) nav a,
+.site-header:not(.editorial-header) .nav-button { align-items: center; display: inline-flex; min-height: 44px; }
 
 .signal-grid { background: var(--void); }
 .results-panel { background: rgba(240,233,204,.055); }
@@ -518,9 +537,9 @@ main {
   .site-header nav a:nth-child(2) { display: none; }
   .nav-button { font-size: 9px; }
   .wordmark { font-size: 15px; }
-  .hero { min-height: 650px; padding-top: 39px; }
-  .kicker { margin-top: 102px; }
-  .hero h1 { font-size: clamp(57px, 16vw, 98px); letter-spacing: -0.12em; line-height: 0.75; white-space: normal; }
+  .hero { --hero-header-height: 95px; --hero-strip-height: 42px; height: calc(100svh - var(--hero-header-height) - var(--hero-strip-height)); max-height: calc(100svh - var(--hero-header-height) - var(--hero-strip-height)); padding: 16px 20px 50px; }
+  .kicker { margin-top: 18px; }
+  .hero h1 { font-size: clamp(62px, 18vw, 82px); letter-spacing: -0.12em; line-height: 0.72; margin-top: 15px; white-space: normal; }
   .hero__bottom { align-items: flex-start; flex-direction: column; }
   .hero__statement { font-size: 19px; max-width: 325px; }
   .arrow-action { width: 100%; }
@@ -530,9 +549,9 @@ main {
   .arena__heading { gap: 25px; }
   .arena__prompt { max-width: none; }
   .song-grid { grid-template-columns: 1fr; }
-  .song-card { min-height: 380px; }
-  .song-card h3 { font-size: clamp(63px, 18vw, 100px); }
-  .versus-lockup { flex-direction: row; height: 70px; }
+  .song-card { min-height: 0; padding: 18px; }
+  .song-card h3 { font-size: clamp(47px, 14vw, 64px); }
+  .versus-lockup { flex-direction: row; height: 54px; }
   .versus-lockup::before, .versus-lockup::after { height: 100%; width: 1px; }
   .versus-lockup::before { left: 0; top: 0; }
   .versus-lockup::after { bottom: 0; right: 0; }
@@ -559,19 +578,18 @@ main {
   .alias-form { align-items: stretch; flex-direction: column; }
   .auth-shell { display: flex; flex-direction: column; gap: 58px; }
   .auth-panel { width: 100%; }
-  .hero { min-height: 730px; padding-top: 34px; }
   .hero::after { display: none; }
-  .hero h1 { font-size: clamp(73px, 23vw, 104px); margin-top: 53px; max-width: 100%; }
+  .hero h1 { max-width: 100%; }
   .hero__proof { display: none; }
-  .record-index-art { height: 350px; opacity: .46; right: -160px; top: 190px; width: 350px; }
+  .record-index-art { height: 280px; opacity: .35; right: -145px; top: 160px; width: 280px; }
   .record-index-art__label { height: 110px; right: 18%; width: 110px; }
   .record-index-art ol { display: none; }
   .bulletin-tape { font-size: 9px; gap: 14px; left: 0; padding: 10px 0; top: 48%; transform: none; width: 100%; }
   .bulletin-tape span:nth-child(n+4) { display: none; }
   .bulletin-tape span::after { margin-left: 14px; }
-  .hero__bottom { margin-top: 88px; max-width: 100%; }
+  .hero__bottom { margin-top: auto; max-width: 100%; }
   .hero__statement { max-width: 290px; }
-  .song-card, .song-card--olamide, .song-card--davido { min-height: 388px; }
+  .song-card, .song-card--olamide, .song-card--davido { min-height: 0; }
   .song-card + .versus-lockup + .song-card { background: #e8dfbf; }
   .about { gap: 45px; }
   .about__copy > p { font-size: 18px; }
@@ -601,6 +619,11 @@ main {
   .faq-page dl div { grid-template-columns: 1fr; }
   .faq-page dt { font-size: 21px; }
   .fan-passport { min-height: 560px; }
+}
+
+@media (max-width: 480px) {
+  .record-index-art { display: none; }
+  .hero__statement { font-size: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
