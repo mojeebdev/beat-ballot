@@ -1,4 +1,4 @@
-export type Artist = "Olamide" | "Davido";
+export type Artist = "Olamide" | "Davido" | "Neutral";
 
 export type SongRole = "Lead" | "Co-lead" | "Feature";
 
@@ -450,6 +450,16 @@ export const songs: Song[] = [
     milestone: "Reached No. 1 on the Official Nigeria Top 100.",
     evidenceLevel: "chart record",
     source: source.turntableDavido,
+  },
+  {
+    id: "neutral-the-money",
+    title: "The Money",
+    artist: "Neutral",
+    year: 2017,
+    role: "Feature",
+    milestone: "A shared Davido × Olamide record retained as a neutral catalogue reference, never a ballot entry.",
+    evidenceLevel: "catalogue context",
+    source: source.davidoCatalog,
   },
 ];
 

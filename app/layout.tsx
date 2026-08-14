@@ -14,7 +14,11 @@ export const metadata: Metadata = {
     siteName: "Beat Ballot",
     locale: "en_NG",
     type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Beat Ballot — Hit for Hit" }],
   },
+  twitter: { card: "summary_large_image", title: "Beat Ballot — Hit for Hit", description: "An independent cultural game around the Olamide vs Davido hit-for-hit conversation.", images: ["/opengraph-image"] },
+  alternates: { canonical: "/" },
+  icons: { icon: "/icon.svg" },
 };
 
 export default function RootLayout({

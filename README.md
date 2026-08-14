@@ -2,67 +2,84 @@
 
 **The songs. The moment. Your ballot.**
 
-Beat Ballot is an independent, fan-led cultural experiment for the Olamide and Davido hit-for-hit conversation. It does **not** represent an official battle and is not affiliated with either artist, their labels or teams.
+Beat Ballot is an independent cultural game around the Olamide vs Davido hit-for-hit conversation in Nigeria. It is not an official artist battle and is not affiliated with, endorsed by, or speaking for either artist, their labels or teams. Built by Mojeeb Titilayo / BlindspotLab.
 
 Live domain: [beatballot.space](https://beatballot.space)
 
-## What is in this first commit
+## Stack and integrity
 
-- A responsive Next.js public experience with a deliberately neutral voting frame.
-- Season 01 pairing structure, public method, artist context and a sourced research index.
-- An honest local preview interaction: it stores one test pick on the current device and never pretends it is a public vote.
-- JSON-LD identity for the project, BlindspotLab and Mojeeb Titilayo.
-- Environment boundaries for the Neon launch integration.
+- Next.js 16 App Router
+- Neon Postgres via `@neondatabase/serverless`
+- Neon Managed Better Auth (Better Auth-powered) via `@neondatabase/auth`
+- No client-side vote authority or anonymous voting
 
-## Run locally
+Postgres owns the integrity boundary: `votes` has a unique `(user_id, round_id)` constraint; the `cast_ballot_vote` database function checks the active matchup, performs an HMAC-hashed request/IP throttle, creates the immutable vote and safe public event, and awards exactly one point. The browser never submits a score, identity or total.
+
+## Neon dashboard configuration
+
+1. In the Beat Ballot Neon project, enable **Neon Auth** (the current Managed Better Auth service, not a legacy external-provider setup).
+2. In Neon Auth, enable only the sign-in methods you intend fans to use. The included auth surface reads the managed configuration; it does not add providers or send email itself.
+3. Add `https://beatballot.space` as an allowed application/origin URL in Neon Auth. Add the local development URL only for development.
+4. Copy the branch’s Postgres connection string into `DATABASE_URL` and the branch’s Managed Auth endpoint into `NEON_AUTH_BASE_URL`.
+
+Neon Auth stores its own users and sessions in `neon_auth.*`. Beat Ballot migrations only create application tables in `public`; they do not alter the Neon Auth schema or unrelated database data.
+
+## Environment
+
+```bash
+cp .env.example .env.local
+```
+
+Set the two Neon values described above. Then generate the required stable cookie-signing secret locally:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+```
+
+Write that output to `NEON_AUTH_COOKIE_SECRET` in `.env.local`. It must be at least 32 characters, remain stable for each deployment environment, and must never be committed. The repository’s `.env.local` is ignored.
+
+## Database setup
+
+Run these commands only against the intended Beat Ballot Neon branch:
 
 ```bash
 npm install
-cp .env.example .env.local
-npm run dev
+npm run db:migrate
+npm run db:seed
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+`db:migrate` records applied versioned SQL in `beat_ballot_migrations`. `db:seed` is idempotent: it upserts the catalogue and all five Season 01 rounds from `data/ballot.ts`. Round 01 is seeded as the single active round; later rounds remain stored but closed until an intentional editorial update. The shared record `The Money` is seeded as a neutral, catalogue-only feature and is never eligible for either artist.
 
-## Production backend decision
+## Develop and verify
 
-The recommended launch stack is **Neon Postgres + Neon Managed Better Auth**.
+```bash
+npm run dev
+npm test
+npm run lint
+npm run build
+npm audit --omit=dev
+```
 
-Why this fit:
+Open [http://localhost:3000](http://localhost:3000). Use a Neon Auth method that is configured in your dashboard. A first session must claim a unique 3–24 character fan alias before casting a ballot. The `/fan` route is middleware-protected; all data-changing routes re-check the authenticated session server-side.
 
-- one home for application data, users and sessions; no Clerk dashboard;
-- relational constraints can enforce one ballot per authenticated user per round;
-- a server-side vote route can keep scoring and fan XP out of the browser;
-- the “last ten” feed can use light polling in v1, avoiding another real-time platform for a single small surface.
+For a manual launch pass, verify:
 
-The public app intentionally remains in `preview` mode until a Neon project and authentication configuration are enabled. The current commit does not create a Neon project, send email, add secrets or write to any production database.
+1. unauthenticated `/fan` redirects to sign-in and unauthenticated vote requests return `401`;
+2. an authenticated user can claim an alias once; duplicate aliases return `409`;
+3. their first valid vote returns `201`; a second vote in the same round returns `409`;
+4. results and leaderboard are `null` before a fan has voted, then appear after that fan’s valid vote;
+5. the safe `Last 10 picks` feed shows only alias, artist, song and relative time and refreshes every 12 seconds.
 
-When approved for the backend pass, the minimum data model is:
+## Deployment
 
-| Table | Purpose | Integrity rule |
-| --- | --- | --- |
-| `profiles` | public fan alias and calculated XP | one profile per authenticated user |
-| `rounds` | ballot timing and rules | one active round at a time |
-| `songs` | sourced song metadata | song belongs to exactly one artist and role |
-| `votes` | immutable fan ballot | unique `(user_id, round_id)` |
-| `vote_events` | last-ten public feed | emits only consent-safe alias/pick data |
-
-Before turning on the public ballot, add server-enforced rate limiting and a bot challenge on the sign-in/vote path. The database constraint remains the final duplicate-vote protection.
+Set `DATABASE_URL`, `NEON_AUTH_BASE_URL`, and the same `NEON_AUTH_COOKIE_SECRET` in the production host. Build with `npm run build`. Do not deploy until the Neon Auth allowed origin contains `https://beatballot.space` and the database migration + seed have completed successfully.
 
 ## Editorial rules
 
-1. The primary ballot is for lead and co-lead records only.
-2. Features, remixes and shared records are retained for a separately labelled Feature Hall.
-3. `The Money` (Davido × Olamide) is neutral and does not count for either side.
-4. A fan sees public round pace only after submitting a ballot.
-5. Every song card carries year, credited role, context and a source link; no opaque “hit score” is used.
+1. Primary ballot rounds are lead/co-lead songs only.
+2. Features and remixes are catalogue records, not primary ballot choices.
+3. `The Money` remains neutral and never awards either artist.
+4. Results stay sealed until a fan casts a verified ballot.
+5. Each catalogue record retains a year, credited role, modest milestone, evidence level and external source link. No copyrighted audio, lyrics or artwork are hosted here.
 
 Research and sources are recorded in [docs/research.md](docs/research.md).
-
-## Build notes
-
-The visual system draws from the BlindspotLab signature: void-green field, paper and solar-gold contrast, editorial serif display type, monospace metadata, directional asymmetry and no generic dashboard treatment.
-
-## Creator
-
-Built by **Mojeeb Titilayo**, Product Engineer & Strategist, as a **BlindspotLab** experiment.
