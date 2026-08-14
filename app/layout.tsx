@@ -19,12 +19,21 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Beat Ballot — Hit for Hit", description: "An independent cultural game around the Olamide vs Davido hit-for-hit conversation.", images: ["/opengraph-image"] },
   alternates: { canonical: "/" },
   icons: { icon: "/icon.svg" },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const structuredData = {
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Beat Ballot",
+      url: "https://beatballot.space",
+      description: "An independent, fan-led Nigerian music-culture ballot.",
+    },
+    {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "Beat Ballot",
@@ -42,7 +51,8 @@ export default function RootLayout({
       "@type": "Organization",
       name: "BlindspotLab",
     },
-  };
+    },
+  ];
 
   return (
     <html lang="en">

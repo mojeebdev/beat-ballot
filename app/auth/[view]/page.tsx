@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { AuthPage } from "./auth-page";
 
+export const metadata = { robots: { index: false, follow: false } };
+
 const views = new Set(["sign-in", "sign-up", "forgot-password"]);
 
 export default async function AuthRoute({ params, searchParams }: { params: Promise<{ view: string }>; searchParams: Promise<{ returnTo?: string }> }) {
