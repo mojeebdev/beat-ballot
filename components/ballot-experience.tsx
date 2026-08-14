@@ -104,11 +104,11 @@ function Catalogue() {
 }
 
 function BulletinTape() {
-  return <div className="bulletin-tape" aria-hidden="true"><span>LIVE BALLOT</span><span>ONE PICK PER ROUND</span><span>UNAFFILIATED</span><span>LIVE BALLOT</span><span>ONE PICK PER ROUND</span></div>;
+  return <div className="bulletin-tape" aria-hidden="true"><span>LIVE BALLOT</span><span>ONE PICK PER ROUND</span><span>UNAFFILIATED</span></div>;
 }
 
-function RecordIndexArt({ round }: { round: BattleRound }) {
-  return <div className="record-index-art" aria-hidden="true"><Image className="record-index-art__vinyl" src="/hero/vinyl-record.webp" alt="" fill priority sizes="(max-width: 760px) 190px, (max-width: 1100px) 46vw, 640px" /><ol>{battleRounds.map((entry) => <li className={entry.id === round.id ? "is-current" : ""} key={entry.id}>{entry.number.slice(0, 2)}</li>)}</ol></div>;
+function RecordIndexArt() {
+  return <div className="record-index-art" aria-hidden="true"><Image className="record-index-art__vinyl" src="/hero/vinyl-record.webp" alt="" fill priority sizes="(max-width: 760px) 190px, (max-width: 1100px) 46vw, 640px" /></div>;
 }
 
 export function BallotExperience() {
@@ -117,7 +117,6 @@ export function BallotExperience() {
   const [notice, setNotice] = useState("ONE VERIFIED BALLOT PER ROUND.");
   const [loading, setLoading] = useState(true);
   const [tallyState, setTallyState] = useState<"live" | "capacity" | "paused">("live");
-  const [previewRoundIndex, setPreviewRoundIndex] = useState(0);
   const [aliasOpen, setAliasOpen] = useState(false);
   const [alias, setAlias] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -156,19 +155,10 @@ export function BallotExperience() {
     return () => { window.clearTimeout(initial); window.clearInterval(interval); };
   }, [loadGame]);
 
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const interval = window.setInterval(() => setPreviewRoundIndex((index) => (index + 1) % battleRounds.length), 6_000);
-    return () => window.clearInterval(interval);
-  }, []);
-
   const round: BattleRound = useMemo(() => {
     const live = game ? battleRounds.find((entry) => entry.id === game.round.id) : undefined;
     return live ?? currentRound;
   }, [game]);
-  const previewRound = battleRounds[previewRoundIndex];
-  const previewOlamide = getSong(previewRound.olamideSongId);
-  const previewDavido = getSong(previewRound.davidoSongId);
 
   async function saveAlias(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSubmitting(true);
@@ -218,7 +208,6 @@ export function BallotExperience() {
       setNotice("SHARE THIS LINK: BEATBALLOT.SPACE");
     }
   }
-  const changePreview = (direction: number) => setPreviewRoundIndex((index) => (index + direction + battleRounds.length) % battleRounds.length);
   const headerStatus = loading
     ? "LOADING LIVE TAPE"
     : tallyState === "capacity"
@@ -226,13 +215,21 @@ export function BallotExperience() {
       : tallyState === "paused"
         ? "NO LIVE ROUND"
         : `ROUND ${String(game?.round.number ?? 1).padStart(2, "0")} OPEN`;
-  const landingShareText = "The Olamide × Davido hit-for-hit conversation has a ballot. Pick your record on Beat Ballot.";
   const shareText = `I just cast my Beat Ballot for ${round.title}. The songs. The moment. Your ballot.`;
 
   return <main>
     <div className="noise" aria-hidden="true" />
     <header className="site-header"><a className="wordmark" href="#top" aria-label="Beat Ballot home">BEAT<br />BALLOT<span>.</span></a><div className="header-status"><span className="status-led" /><span>{headerStatus}</span></div><nav aria-label="Primary navigation"><a href="#arena">ARENA</a><Link href="/season-01">SEASON</Link><Link href="/catalogue">INDEX</Link><Link href="/method">METHOD</Link>{game?.viewer.signedIn ? <button className="nav-button" onClick={() => void signOut()}>SIGN OUT</button> : <Link href="/auth/sign-in?returnTo=/#arena">SIGN IN</Link>}</nav><MobileNav items={homeLinks} signedIn={Boolean(game?.viewer.signedIn)} onSignOut={() => void signOut()} /></header>
-    <section className="hero" id="top"><RecordIndexArt round={previewRound} /><div className="hero__meta"><span>NIGERIA / 2026</span><span>SEASON 01</span></div><p className="kicker">A FAN-LED CULTURAL EXPERIMENT</p><h1><span className="hero-word">HIT</span><span className="hero-slash">{"//"}</span><span className="hero-word">FOR</span><span className="hero-slash">{"//"}</span><span className="hero-word">HIT</span></h1><div className="hero__proof"><span>THE CULTURE VOTES.</span><strong>ONE PICK.<br />REAL IMPACT.<br />EVERY ROUND.</strong><small>NOT AN OFFICIAL<br />ARTIST BATTLE.</small></div><BulletinTape /><div className="hero__season-reel" aria-label="Season 01 rotating matchup preview"><button aria-label="Show previous Season 01 round" onClick={() => changePreview(-1)} type="button">←</button><div><span>SEASON 01 / ROTATING PREVIEW / {previewRound.number}</span><strong>{previewOlamide.title} <i>VS</i> {previewDavido.title}</strong></div><button aria-label="Show next Season 01 round" onClick={() => changePreview(1)} type="button">→</button></div><div className="hero__bottom"><p className="hero__statement">Two deep catalogues. No official fight. Just the songs people would go to war for.</p><div className="hero__actions"><a className="arrow-action" href="#arena">CAST YOUR PICK <span>↓</span></a><div className="share-tools"><a href={xShareUrl(landingShareText)} target="_blank" rel="noreferrer">POST TO X ↗</a><button onClick={() => void shareBallot(landingShareText)} type="button">SHARE ANYWHERE ↗</button></div></div></div><div className="hero__scoreline"><div><span>01</span> OLAMIDE</div><span className="scoreline-vs">VS</span><div>DAVIDO <span>02</span></div></div></section>
+    <section className="hero" id="top">
+      <RecordIndexArt />
+      <div className="hero__meta"><span>NIGERIA / 2026</span><span>SEASON 01</span></div>
+      <p className="kicker">A FAN-LED CULTURAL EXPERIMENT</p>
+      <h1><span className="hero-word">HIT</span><span className="hero-slash">{"//"}</span><span className="hero-word">FOR</span><span className="hero-slash">{"//"}</span><span className="hero-word">HIT</span></h1>
+      <div className="hero__proof"><span>THE CULTURE VOTES.</span><strong>ONE PICK.<br />REAL IMPACT.<br />EVERY ROUND.</strong><small>NOT AN OFFICIAL<br />ARTIST BATTLE.</small></div>
+      <BulletinTape />
+      <div className="hero__actions hero__actions--landing"><a className="arrow-action" href="#arena">CAST YOUR PICK <span>↓</span></a></div>
+      <div className="hero__scoreline"><div><span>01</span> OLAMIDE</div><span className="scoreline-vs">VS</span><div>DAVIDO <span>02</span></div></div>
+    </section>
     <section className="statement-strip"><span>NO INDUSTRY PANEL.</span><span>NO FAN-WAR ALGORITHM.</span><span>JUST RECEIPTS, CONTEXT &amp; YOUR PICK.</span></section>
     <section className="arena" id="arena"><div className="arena__heading"><div><p className="section-label">CURRENT BALLOT / {String(game?.round.number ?? 1).padStart(2, "0")} / 05</p><h2>{game?.round.title ?? round.title}</h2></div><div className="arena__prompt"><span>{game?.round.lens ?? round.lens}</span><p>{game?.round.prompt ?? round.prompt}</p></div></div><div className="song-grid"><SongCard song={getSong(round.olamideSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /><div className="versus-lockup" aria-hidden="true"><span>HIT</span><strong>VS</strong><span>HIT</span></div><SongCard song={getSong(round.davidoSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /></div><div className="ballot-notice" role="status"><span className="status-led" />{notice}</div>{tallyState === "capacity" ? <div className="traffic-notice" role="status"><span className="status-led" /><p>THE ROOM IS BUSY. WE&apos;RE PROTECTING THE TALLY WHILE IT RECOVERS.</p><button onClick={() => void loadGame()} type="button">RETRY NOW ↗</button></div> : null}{game?.viewer.hasVoted ? <div className="share-tools share-tools--after"><a target="_blank" rel="noreferrer" href={xShareUrl(shareText)}>SHARE YOUR PICK ON X ↗</a><button onClick={() => void shareBallot(shareText)} type="button">SHARE YOUR PICK ↗</button></div> : null}{aliasOpen ? <form className="alias-form" onSubmit={saveAlias}><label htmlFor="fan-alias">CLAIM A PUBLIC FAN ALIAS <input id="fan-alias" value={alias} onChange={(event) => setAlias(event.target.value)} minLength={3} maxLength={24} required autoFocus placeholder="e.g. LAGOS TAPE" /></label><button className="pick-button" disabled={submitting}>SAVE ALIAS →</button></form> : null}</section>
     <section className="signal-grid"><RollingPicks events={game?.events ?? []} /><ResultsPanel game={game} /></section>

@@ -487,7 +487,7 @@ main {
   padding: clamp(22px, 3.5vh, 32px) clamp(20px, 4vw, 64px) 110px;
 }
 .hero::after { background: rgba(9, 21, 16, .66); content: ""; inset: 0 0 0 66%; pointer-events: none; position: absolute; z-index: 0; }
-.hero__meta, .kicker, .hero h1, .hero__proof, .hero__bottom, .hero__scoreline, .bulletin-tape { position: relative; z-index: 2; }
+.hero__meta, .kicker, .hero h1, .hero__proof, .hero__actions, .hero__scoreline, .bulletin-tape { position: relative; z-index: 2; }
 .hero { display: flex; flex-direction: column; }
 .hero h1 { display: grid; font-size: clamp(70px, 8vw, 132px); grid-template-columns: minmax(0, 1fr) auto; line-height: .67; margin: clamp(12px, 2vh, 20px) 0 0 -.07em; max-width: min(54vw, 720px); white-space: normal; }
 .hero-word { display: block; }
@@ -501,21 +501,9 @@ main {
 .bulletin-tape span::after { content: "•"; margin-left: 22px; }
 .record-index-art { height: min(36vw, 500px); pointer-events: none; position: absolute; right: clamp(-128px, -7vw, -72px); top: clamp(104px, 12vh, 144px); width: min(36vw, 500px); z-index: 1; }
 .record-index-art__vinyl { filter: brightness(1.35) contrast(1.15) drop-shadow(0 26px 24px rgba(0, 0, 0, .32)); object-fit: contain; opacity: .94; transform: rotate(-9deg); }
-.record-index-art ol { color: var(--solar); display: grid; font: 11px var(--mono); gap: 25px; list-style: none; margin: 0; padding: 0; position: absolute; right: 4%; top: 10%; z-index: 1; }
-.record-index-art li { align-items: center; display: flex; gap: 12px; }
-.record-index-art li::after { background: var(--solar); content: ""; height: 1px; width: 12px; }
-.record-index-art li.is-current { color: var(--paper); }
-.record-index-art li.is-current::after { background: var(--paper); width: 25px; }
 .kicker { margin: clamp(14px, 2vh, 22px) 0 0; }
-.hero__bottom { align-items: end; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(170px, 198px); margin-top: auto; max-width: min(54vw, 720px); padding-bottom: 0; }
-.hero__statement { font-size: clamp(19px, 1.65vw, 25px); max-width: 520px; }
-.hero__season-reel { align-items: center; display: grid; gap: 12px; grid-template-columns: 34px minmax(0, 1fr) 34px; margin-top: 14px; max-width: min(54vw, 680px); position: relative; width: 100%; z-index: 2; }
-.hero__season-reel > button { align-items: center; background: transparent; border: 1px solid var(--line); color: var(--solar); cursor: pointer; display: inline-flex; font: 18px/1 var(--serif); height: 34px; justify-content: center; padding: 0; transition: background 160ms ease, color 160ms ease; width: 34px; }
-.hero__season-reel > button:hover { background: var(--paper); color: var(--void-deep); }
-.hero__season-reel span { color: var(--paper-dim); display: block; font: 9px/1.2 var(--mono); letter-spacing: .075em; }
-.hero__season-reel strong { display: block; font-size: clamp(17px, 1.7vw, 24px); font-weight: 400; letter-spacing: -.055em; line-height: 1; margin-top: 5px; }
-.hero__season-reel i { color: var(--solar); font-style: italic; }
-.hero__actions { display: grid; gap: 10px; justify-items: start; }
+.hero__actions { display: grid; justify-items: start; margin-top: auto; }
+.hero__actions--landing .arrow-action { min-width: 205px; }
 .share-tools { align-items: center; display: flex; flex-wrap: wrap; gap: 9px 17px; }
 .share-tools a, .share-tools button { background: transparent; border: 0; border-bottom: 1px solid var(--solar); color: var(--solar); cursor: pointer; font: 10px var(--mono); letter-spacing: .07em; padding: 0 0 4px; }
 .share-tools a:hover, .share-tools button:hover { color: var(--paper); }
@@ -560,7 +548,7 @@ main {
 .catalogue-records li:hover { background: rgba(240,233,204,.055); }
 
 @media (max-width: 1100px) and (min-width: 761px) {
-  .hero h1, .hero__bottom, .hero__season-reel { max-width: 62vw; }
+  .hero h1 { max-width: 62vw; }
   .hero__proof { display: none; }
   .record-index-art { height: min(38vw, 400px); right: -60px; top: 128px; width: min(38vw, 400px); }
   .bulletin-tape { width: min(62vw, 560px); }
@@ -589,8 +577,6 @@ main {
   .hero { --hero-header-height: 95px; --hero-strip-height: 42px; height: calc(100svh - var(--hero-header-height) - var(--hero-strip-height)); max-height: calc(100svh - var(--hero-header-height) - var(--hero-strip-height)); padding: 16px 20px 50px; }
   .kicker { margin-top: 18px; }
   .hero h1 { font-size: clamp(62px, 18vw, 82px); letter-spacing: -0.12em; line-height: 0.72; margin-top: 15px; white-space: normal; }
-  .hero__bottom { align-items: flex-start; display: flex; flex-direction: column; gap: 18px; }
-  .hero__statement { font-size: 19px; max-width: 325px; }
   .arrow-action { width: 100%; }
   .statement-strip { align-items: center; gap: 7px; justify-content: center; padding-bottom: 10px; padding-top: 10px; text-align: center; }
   .statement-strip span:not(:first-child) { display: none; }
@@ -632,15 +618,9 @@ main {
   .hero__proof { display: none; }
   .record-index-art { display: block; height: 190px; opacity: .56; right: -42px; top: 100px; width: 190px; }
   .record-index-art__vinyl { transform: rotate(-12deg); }
-  .record-index-art ol { display: none; }
   .bulletin-tape { align-self: stretch; font-size: 8px; gap: 12px; left: auto; margin: 12px 0 0; padding: 10px 8px; position: relative; top: auto; transform: none; width: 100%; }
   .bulletin-tape span:nth-child(n+4) { display: none; }
   .bulletin-tape span::after { margin-left: 14px; }
-  .hero__season-reel { gap: 9px; grid-template-columns: 30px minmax(0, 1fr) 30px; margin-top: 14px; max-width: 100%; }
-  .hero__season-reel > button { height: 30px; width: 30px; }
-  .hero__season-reel strong { font-size: clamp(16px, 5vw, 21px); }
-  .hero__bottom { margin-top: auto; max-width: 100%; }
-  .hero__statement { max-width: 290px; }
   .hero__actions { width: 100%; }
   .hero__actions .arrow-action { width: 100%; }
   .share-tools { justify-content: space-between; width: 100%; }
@@ -683,10 +663,6 @@ main {
   .legal-page__content article { min-height: 0; padding: 25px 0 29px; }
   .legal-page__content article:nth-child(even) { border-left: 0; padding-left: 0; }
   .fan-passport { min-height: 560px; }
-}
-
-@media (max-width: 480px) {
-  .hero__statement { font-size: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
