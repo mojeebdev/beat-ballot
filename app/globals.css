@@ -504,6 +504,14 @@ main {
 .kicker { margin: clamp(14px, 2vh, 22px) 0 0; }
 .hero__actions { display: grid; justify-items: start; margin-top: auto; }
 .hero__actions--landing .arrow-action { min-width: 205px; }
+.season-preview { border-top: 1px solid var(--line); margin-top: 24px; max-width: 760px; padding-top: 17px; }
+.season-preview .section-label { margin-bottom: 13px; }
+.season-preview__reel { align-items: center; display: grid; gap: 16px; grid-template-columns: 34px minmax(0, 1fr) 34px; }
+.season-preview__reel > button { align-items: center; background: transparent; border: 1px solid var(--line); color: var(--solar); cursor: pointer; display: inline-flex; font: 18px/1 var(--serif); height: 34px; justify-content: center; padding: 0; transition: background 160ms ease, color 160ms ease; width: 34px; }
+.season-preview__reel > button:hover { background: var(--paper); color: var(--void-deep); }
+.season-preview__reel span { color: var(--paper-dim); display: block; font: 9px/1.2 var(--mono); letter-spacing: .075em; }
+.season-preview__reel strong { display: block; font-size: clamp(19px, 2.3vw, 31px); font-weight: 400; letter-spacing: -.055em; line-height: 1; margin-top: 6px; }
+.season-preview__reel i { color: var(--solar); font-style: italic; }
 .share-tools { align-items: center; display: flex; flex-wrap: wrap; gap: 9px 17px; }
 .share-tools a, .share-tools button { background: transparent; border: 0; border-bottom: 1px solid var(--solar); color: var(--solar); cursor: pointer; font: 10px var(--mono); letter-spacing: .07em; padding: 0 0 4px; }
 .share-tools a:hover, .share-tools button:hover { color: var(--paper); }
@@ -623,6 +631,10 @@ main {
   .bulletin-tape span::after { margin-left: 14px; }
   .hero__actions { width: 100%; }
   .hero__actions .arrow-action { width: 100%; }
+  .season-preview { margin-top: 21px; }
+  .season-preview__reel { gap: 10px; grid-template-columns: 30px minmax(0, 1fr) 30px; }
+  .season-preview__reel > button { height: 30px; width: 30px; }
+  .season-preview__reel strong { font-size: clamp(18px, 6vw, 25px); }
   .share-tools { justify-content: space-between; width: 100%; }
   .share-tools a, .share-tools button { font-size: 9px; }
   .song-card, .song-card--olamide, .song-card--davido { min-height: 0; }
