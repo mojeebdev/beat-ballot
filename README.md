@@ -50,6 +50,8 @@ npm run db:seed
 
 `db:migrate` records applied versioned SQL in `beat_ballot_migrations`. `db:seed` is idempotent: it upserts the catalogue and all five Season 01 rounds from `data/ballot.ts`. Round 01 is seeded as the single active round; later rounds remain stored but closed until an intentional editorial update. The shared record `The Money` is seeded as a neutral, catalogue-only feature and is never eligible for either artist.
 
+The legal pages, responsive navigation, sharing controls and temporary tally-protection state do not require a schema migration. After pulling the catalogue-source update, run `npm run db:seed` once to refresh the stored source labels, URLs and corrected `Unavailable` milestone.
+
 ## Develop and verify
 
 ```bash

@@ -5,12 +5,11 @@ import { neon } from "@neondatabase/serverless";
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required.");
 
 const sourceMap = {
-  olamideCatalog: ["OkayAfrica — Olamide catalogue", "https://www.okayafrica.com/the-30-best-olamide-songs-from-his-iconic-discography/"],
-  davidoCatalog: ["OkayAfrica — Davido catalogue", "https://www.okayafrica.com/the-30-best-davido-songs/"],
+  olamideCatalog: ["Apple Music — Olamide catalogue", "https://music.apple.com/ng/artist/olamide/389401008"],
+  davidoCatalog: ["Apple Music — Davido catalogue", "https://music.apple.com/ng/artist/davido/254654363"],
   turntableOlamide: ["TurnTable Charts — 99 at No. 1", "https://www.turntablecharts.com/news/1772"],
   turntableDavido: ["TurnTable Charts — Davido singles performance", "https://www.turntablecharts.com/news/2186-every-davido-s-first-single-of-the-year-and-how-they-performed-on-the-official-singles-chart"],
-  turntableUnavailable: ["TurnTable Charts — Davido milestones", "https://www.turntablecharts.com/news/1991"],
-  fallGold: ["OkayAfrica — Fall goes Gold", "https://www.okayafrica.com/davidos-fall-goes-gold/"],
+  fallGold: ["BellaNaija — Fall Gold certification", "https://www.bellanaija.com/2020/05/davido-fall-gold/"],
 };
 
 const catalogue = await readFile(join(process.cwd(), "data", "ballot.ts"), "utf8");

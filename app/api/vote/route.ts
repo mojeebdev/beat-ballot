@@ -26,6 +26,10 @@ export async function POST(request: Request) {
     if (message.includes("BB_INVALID_BALLOT") || message.includes("BB_ROUND_CLOSED")) {
       return NextResponse.json({ error: "That ballot is no longer available." }, { status: 422 });
     }
-    return NextResponse.json({ error: "The ballot could not be recorded. Please try again." }, { status: 500 });
+    console.error("Beat Ballot vote unavailable", error);
+    return NextResponse.json(
+      { error: "The tally is temporarily unavailable. Please try again shortly." },
+      { status: 503, headers: { "Retry-After": "20" } },
+    );
   }
 }

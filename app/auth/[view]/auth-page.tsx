@@ -16,6 +16,7 @@ export function AuthPage({ view, returnTo }: { view: string; returnTo: string })
         <NeonAuthUIProvider authClient={authClient} redirectTo={returnTo}>
           <AuthView path={view as "sign-in" | "sign-up" | "forgot-password"} />
         </NeonAuthUIProvider>
+        <p className="auth-legal">By continuing, you agree to the <Link href="/terms">Terms</Link> and acknowledge the <Link href="/privacy">Privacy Notice</Link>.</p>
       </section>
       <p className="auth-disclaimer">BEAT BALLOT IS AN INDEPENDENT, UNAFFILIATED CULTURAL EXPERIMENT.</p>
     </main>

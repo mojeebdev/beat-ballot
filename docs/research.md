@@ -27,11 +27,10 @@ The matchups are an editorial lens, not a claim of numerical equivalence. Fans v
 ## Primary sources currently used
 
 - [TurnTable Charts — Olamide's `99` reaches No. 1](https://www.turntablecharts.com/news/1772) — supports the official Nigerian No. 1 context for `Rock`, `Omo Ope`, `Amapiano`, and `99`.
-- [TurnTable Charts — Davido single performance](https://www.turntablecharts.com/news/2186-every-davido-s-first-single-of-the-year-and-how-they-performed-on-the-official-singles-chart) — supports `FEM`, `No Competition`, `Awuke`, and `With You` performance notes.
-- [TurnTable Charts — Davido milestones](https://www.turntablecharts.com/news/1991) — supports the `Unavailable` chart and certification note.
-- [OkayAfrica — Davido's `Fall` goes Gold](https://www.okayafrica.com/davidos-fall-goes-gold/) — supports the US Gold certification note.
-- [OkayAfrica — Olamide catalogue](https://www.okayafrica.com/the-30-best-olamide-songs-from-his-iconic-discography/) — catalogue and cultural context.
-- [OkayAfrica — Davido catalogue](https://www.okayafrica.com/the-30-best-davido-songs/) — catalogue and cultural context.
+- [TurnTable Charts — Davido single performance](https://www.turntablecharts.com/news/2186-every-davido-s-first-single-of-the-year-and-how-they-performed-on-the-official-singles-chart) — supports `FEM`, `No Competition`, `Awuke`, `With You`, and the corrected `Unavailable` peak / certification note.
+- [BellaNaija — Davido's `Fall` goes Gold](https://www.bellanaija.com/2020/05/davido-fall-gold/) — supports the US Gold certification note.
+- [Apple Music — Olamide](https://music.apple.com/ng/artist/olamide/389401008) — live artist catalogue context.
+- [Apple Music — Davido](https://music.apple.com/ng/artist/davido/254654363) — live artist catalogue context.
 
 ## Research to add before expanding beyond Season 01
 

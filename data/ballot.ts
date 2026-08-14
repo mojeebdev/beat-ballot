@@ -31,12 +31,12 @@ export type BattleRound = {
 
 const source = {
   olamideCatalog: {
-    label: "OkayAfrica — Olamide catalogue",
-    url: "https://www.okayafrica.com/the-30-best-olamide-songs-from-his-iconic-discography/",
+    label: "Apple Music — Olamide catalogue",
+    url: "https://music.apple.com/ng/artist/olamide/389401008",
   },
   davidoCatalog: {
-    label: "OkayAfrica — Davido catalogue",
-    url: "https://www.okayafrica.com/the-30-best-davido-songs/",
+    label: "Apple Music — Davido catalogue",
+    url: "https://music.apple.com/ng/artist/davido/254654363",
   },
   turntableOlamide: {
     label: "TurnTable Charts — 99 at No. 1",
@@ -46,13 +46,9 @@ const source = {
     label: "TurnTable Charts — Davido singles performance",
     url: "https://www.turntablecharts.com/news/2186-every-davido-s-first-single-of-the-year-and-how-they-performed-on-the-official-singles-chart",
   },
-  turntableUnavailable: {
-    label: "TurnTable Charts — Davido milestones",
-    url: "https://www.turntablecharts.com/news/1991",
-  },
   fallGold: {
-    label: "OkayAfrica — Fall goes Gold",
-    url: "https://www.okayafrica.com/davidos-fall-goes-gold/",
+    label: "BellaNaija — Fall Gold certification",
+    url: "https://www.bellanaija.com/2020/05/davido-fall-gold/",
   },
 } as const;
 
@@ -407,9 +403,9 @@ export const songs: Song[] = [
     artist: "Davido",
     year: 2023,
     role: "Co-lead",
-    milestone: "Reached No. 1, spent 46 weeks on the chart, and earned 3× Platinum in Nigeria.",
+    milestone: "Peaked at No. 2, spent 46 weeks on the chart, and earned 3× Platinum in Nigeria.",
     evidenceLevel: "chart record",
-    source: source.turntableUnavailable,
+    source: source.turntableDavido,
   },
   {
     id: "davido-feel",

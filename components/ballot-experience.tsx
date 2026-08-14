@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { battleRounds, currentRound, getSong, songs, type Artist, type BattleRound, type Song } from "@/data/ballot";
+import { MobileNav } from "@/components/mobile-nav";
 
 type VoteEvent = { id: string; alias: string; artist: string; title: string; created_at: string };
 type Result = { song_id: string; title: string; artist: string; votes: number };
 type Leader = { alias: string; points: number };
+type GameError = { error?: string; code?: string };
 type Game = {
   round: { id: string; number: number; title: string; lens: string; prompt: string; olamide_song_id: string; davido_song_id: string };
   viewer: { signedIn: boolean; alias: string | null; hasVoted: boolean };
@@ -16,6 +18,18 @@ type Game = {
   results: Result[] | null;
   leaderboard: Leader[] | null;
 };
+
+const siteUrl = "https://beatballot.space";
+const homeLinks = [
+  { href: "#arena", label: "ARENA" },
+  { href: "/season-01", label: "SEASON" },
+  { href: "/catalogue", label: "INDEX" },
+  { href: "/method", label: "METHOD" },
+];
+
+function xShareUrl(text: string) {
+  return `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(siteUrl)}`;
+}
 
 const artistNotes: Record<Exclude<Artist, "Neutral">, string> = {
   Olamide: "A rapper, songwriter and label leader whose catalogue continuously connects Yoruba rap, street-pop and new-school collaborations.",
@@ -64,7 +78,7 @@ function RollingPicks({ events }: { events: VoteEvent[] }) {
 function ResultsPanel({ game }: { game: Game | null }) {
   const isOpen = Boolean(game?.viewer.hasVoted && game.results);
   return <section className="results-panel" id="leaderboard">
-    <div className="section-label">ROUND 01 / SONG PACE</div>
+    <div className="section-label">ROUND {String(game?.round.number ?? 1).padStart(2, "0")} / SONG PACE</div>
     <div className="results-panel__intro"><h2>Let the room speak.</h2><p>{isOpen ? "Your verified ballot opened the room. Pace and fan points update on a short live interval." : "The current round stays sealed until you cast a verified ballot."}</p></div>
     {isOpen ? <>
       <ol className="result-list result-list--open">{game!.results!.map((result, index) => <li key={result.song_id}><span className="result-rank">0{index + 1}</span><span className="result-song">{result.title}</span><span className="result-artist">{result.artist}</span><span className="result-score">{String(result.votes).padStart(2, "0")}</span></li>)}</ol>
@@ -89,8 +103,9 @@ function BulletinTape() {
   return <div className="bulletin-tape" aria-hidden="true"><span>LIVE BALLOT</span><span>ONE PICK PER ROUND</span><span>UNAFFILIATED</span><span>LIVE BALLOT</span><span>ONE PICK PER ROUND</span></div>;
 }
 
-function RecordIndexArt() {
-  return <div className="record-index-art" aria-hidden="true"><div className="record-index-art__grooves" /><div className="record-index-art__label"><span>SIDE A</span><strong>BB—01</strong><span>33⅓</span></div><ol><li>01</li><li>02</li><li>03</li><li>04</li><li>05</li></ol></div>;
+function RecordIndexArt({ round }: { round: BattleRound }) {
+  const number = round.number.slice(0, 2);
+  return <div className="record-index-art" aria-hidden="true"><div className="record-index-art__grooves" /><div className="record-index-art__label"><span>SIDE {number}</span><strong>BB—{number}</strong><span>33⅓</span></div><ol>{battleRounds.map((entry) => <li className={entry.id === round.id ? "is-current" : ""} key={entry.id}>{entry.number.slice(0, 2)}</li>)}</ol></div>;
 }
 
 export function BallotExperience() {
@@ -98,6 +113,8 @@ export function BallotExperience() {
   const [game, setGame] = useState<Game | null>(null);
   const [notice, setNotice] = useState("ONE VERIFIED BALLOT PER ROUND.");
   const [loading, setLoading] = useState(true);
+  const [tallyState, setTallyState] = useState<"live" | "busy" | "paused">("live");
+  const [previewRoundIndex, setPreviewRoundIndex] = useState(0);
   const [aliasOpen, setAliasOpen] = useState(false);
   const [alias, setAlias] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -105,10 +122,22 @@ export function BallotExperience() {
   const loadGame = useCallback(async () => {
     try {
       const response = await fetch("/api/game", { cache: "no-store" });
-      if (!response.ok) throw new Error("Game unavailable");
-      setGame(await response.json() as Game);
+      const data = await response.json().catch(() => ({})) as Game | GameError;
+      if (!response.ok) {
+        if ((data as GameError).code === "ROUND_UNAVAILABLE") {
+          setTallyState("paused");
+          setNotice("NO LIVE ROUND IS OPEN. CHECK THE SEASON REEL FOR WHAT'S NEXT.");
+          return;
+        }
+        setTallyState("busy");
+        setNotice("THE ROOM IS BUSY. WE'RE PROTECTING THE TALLY. TRY AGAIN SHORTLY.");
+        return;
+      }
+      setGame(data as Game);
+      setTallyState("live");
     } catch {
-      setNotice("THE LIVE TAPE IS TAKING A BREATH. TRY AGAIN SHORTLY.");
+      setTallyState("busy");
+      setNotice("THE ROOM IS BUSY. WE'RE PROTECTING THE TALLY. TRY AGAIN SHORTLY.");
     } finally { setLoading(false); }
   }, []);
 
@@ -118,10 +147,19 @@ export function BallotExperience() {
     return () => { window.clearTimeout(initial); window.clearInterval(interval); };
   }, [loadGame]);
 
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const interval = window.setInterval(() => setPreviewRoundIndex((index) => (index + 1) % battleRounds.length), 6_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   const round: BattleRound = useMemo(() => {
     const live = game ? battleRounds.find((entry) => entry.id === game.round.id) : undefined;
     return live ?? currentRound;
   }, [game]);
+  const previewRound = battleRounds[previewRoundIndex];
+  const previewOlamide = getSong(previewRound.olamideSongId);
+  const previewDavido = getSong(previewRound.davidoSongId);
 
   async function saveAlias(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSubmitting(true);
@@ -141,24 +179,53 @@ export function BallotExperience() {
     try {
       const response = await fetch("/api/vote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ roundId: round.id, songId: song.id }) });
       const data = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(data.error || "Could not record your ballot.");
+      if (!response.ok) {
+        if (response.status >= 500) setTallyState("busy");
+        throw new Error(data.error || "Could not record your ballot.");
+      }
       setNotice(`${song.title.toUpperCase()} IS ON THE TAPE. THE ROOM IS OPEN.`); await loadGame();
     } catch (error) { setNotice(error instanceof Error ? error.message.toUpperCase() : "THE BALLOT COULD NOT BE RECORDED."); } finally { setSubmitting(false); }
   }
 
   async function signOut() { await authClient.signOut(); router.push("/"); router.refresh(); }
+  async function shareBallot(text: string) {
+    const payload = { title: "Beat Ballot — Hit for Hit", text, url: siteUrl };
+    if (navigator.share) {
+      try {
+        await navigator.share(payload);
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${text} ${siteUrl}`);
+      setNotice("THE LINK IS COPIED. SEND THE ROOM IN.");
+    } catch {
+      setNotice("SHARE THIS LINK: BEATBALLOT.SPACE");
+    }
+  }
+  const changePreview = (direction: number) => setPreviewRoundIndex((index) => (index + direction + battleRounds.length) % battleRounds.length);
+  const headerStatus = loading
+    ? "LOADING LIVE TAPE"
+    : tallyState === "busy"
+      ? "TALLY PROTECTION ACTIVE"
+      : tallyState === "paused"
+        ? "NO LIVE ROUND"
+        : `ROUND ${String(game?.round.number ?? 1).padStart(2, "0")} OPEN`;
+  const landingShareText = "The Olamide × Davido hit-for-hit conversation has a ballot. Pick your record on Beat Ballot.";
   const shareText = `I just cast my Beat Ballot for ${round.title}. The songs. The moment. Your ballot.`;
 
   return <main>
     <div className="noise" aria-hidden="true" />
-    <header className="site-header"><a className="wordmark" href="#top" aria-label="Beat Ballot home">BEAT<br />BALLOT<span>.</span></a><div className="header-status"><span className="status-led" /><span>{loading ? "LOADING LIVE TAPE" : "ROUND 01 OPEN"}</span></div><nav aria-label="Primary navigation"><a href="#arena">ARENA</a><Link href="/season-01">SEASON</Link><Link href="/catalogue">INDEX</Link><Link href="/method">METHOD</Link>{game?.viewer.signedIn ? <button className="nav-button" onClick={() => void signOut()}>SIGN OUT</button> : <Link href="/auth/sign-in?returnTo=/#arena">SIGN IN</Link>}</nav></header>
-    <section className="hero" id="top"><RecordIndexArt /><div className="hero__meta"><span>NIGERIA / 2026</span><span>SEASON 01</span></div><p className="kicker">A FAN-LED CULTURAL EXPERIMENT</p><h1><span className="hero-word">HIT</span><span className="hero-slash">{"//"}</span><span className="hero-word">FOR</span><span className="hero-slash">{"//"}</span><span className="hero-word">HIT</span></h1><div className="hero__proof"><span>THE CULTURE VOTES.</span><strong>ONE PICK.<br />REAL IMPACT.<br />EVERY ROUND.</strong><small>NOT AN OFFICIAL<br />ARTIST BATTLE.</small></div><BulletinTape /><div className="hero__bottom"><p className="hero__statement">Two deep catalogues. No official fight. Just the songs people would go to war for.</p><a className="arrow-action" href="#arena">CAST YOUR PICK <span>↓</span></a></div><div className="hero__scoreline"><div><span>01</span> OLAMIDE</div><span className="scoreline-vs">VS</span><div>DAVIDO <span>02</span></div></div></section>
+    <header className="site-header"><a className="wordmark" href="#top" aria-label="Beat Ballot home">BEAT<br />BALLOT<span>.</span></a><div className="header-status"><span className="status-led" /><span>{headerStatus}</span></div><nav aria-label="Primary navigation"><a href="#arena">ARENA</a><Link href="/season-01">SEASON</Link><Link href="/catalogue">INDEX</Link><Link href="/method">METHOD</Link>{game?.viewer.signedIn ? <button className="nav-button" onClick={() => void signOut()}>SIGN OUT</button> : <Link href="/auth/sign-in?returnTo=/#arena">SIGN IN</Link>}</nav><MobileNav items={homeLinks} signedIn={Boolean(game?.viewer.signedIn)} onSignOut={() => void signOut()} /></header>
+    <section className="hero" id="top"><RecordIndexArt round={previewRound} /><div className="hero__meta"><span>NIGERIA / 2026</span><span>SEASON 01</span></div><p className="kicker">A FAN-LED CULTURAL EXPERIMENT</p><h1><span className="hero-word">HIT</span><span className="hero-slash">{"//"}</span><span className="hero-word">FOR</span><span className="hero-slash">{"//"}</span><span className="hero-word">HIT</span></h1><div className="hero__proof"><span>THE CULTURE VOTES.</span><strong>ONE PICK.<br />REAL IMPACT.<br />EVERY ROUND.</strong><small>NOT AN OFFICIAL<br />ARTIST BATTLE.</small></div><BulletinTape /><div className="hero__season-reel" aria-label="Season 01 rotating matchup preview"><button aria-label="Show previous Season 01 round" onClick={() => changePreview(-1)} type="button">←</button><div><span>SEASON 01 / ROTATING PREVIEW / {previewRound.number}</span><strong>{previewOlamide.title} <i>VS</i> {previewDavido.title}</strong></div><button aria-label="Show next Season 01 round" onClick={() => changePreview(1)} type="button">→</button></div><div className="hero__bottom"><p className="hero__statement">Two deep catalogues. No official fight. Just the songs people would go to war for.</p><div className="hero__actions"><a className="arrow-action" href="#arena">CAST YOUR PICK <span>↓</span></a><div className="share-tools"><a href={xShareUrl(landingShareText)} target="_blank" rel="noreferrer">POST TO X ↗</a><button onClick={() => void shareBallot(landingShareText)} type="button">SHARE ANYWHERE ↗</button></div></div></div><div className="hero__scoreline"><div><span>01</span> OLAMIDE</div><span className="scoreline-vs">VS</span><div>DAVIDO <span>02</span></div></div></section>
     <section className="statement-strip"><span>NO INDUSTRY PANEL.</span><span>NO FAN-WAR ALGORITHM.</span><span>JUST RECEIPTS, CONTEXT &amp; YOUR PICK.</span></section>
-    <section className="arena" id="arena"><div className="arena__heading"><div><p className="section-label">CURRENT BALLOT / {String(game?.round.number ?? 1).padStart(2, "0")} / 05</p><h2>{game?.round.title ?? round.title}</h2></div><div className="arena__prompt"><span>{game?.round.lens ?? round.lens}</span><p>{game?.round.prompt ?? round.prompt}</p></div></div><div className="song-grid"><SongCard song={getSong(round.olamideSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /><div className="versus-lockup" aria-hidden="true"><span>HIT</span><strong>VS</strong><span>HIT</span></div><SongCard song={getSong(round.davidoSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /></div><div className="ballot-notice" role="status"><span className="status-led" />{notice}</div>{game?.viewer.hasVoted ? <a className="share-action" target="_blank" rel="noreferrer" href={`https://x.com/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent("https://beatballot.space")}`}>SHARE YOUR PICK ON X ↗</a> : null}{aliasOpen ? <form className="alias-form" onSubmit={saveAlias}><label htmlFor="fan-alias">CLAIM A PUBLIC FAN ALIAS <input id="fan-alias" value={alias} onChange={(event) => setAlias(event.target.value)} minLength={3} maxLength={24} required autoFocus placeholder="e.g. LAGOS TAPE" /></label><button className="pick-button" disabled={submitting}>SAVE ALIAS →</button></form> : null}</section>
+    <section className="arena" id="arena"><div className="arena__heading"><div><p className="section-label">CURRENT BALLOT / {String(game?.round.number ?? 1).padStart(2, "0")} / 05</p><h2>{game?.round.title ?? round.title}</h2></div><div className="arena__prompt"><span>{game?.round.lens ?? round.lens}</span><p>{game?.round.prompt ?? round.prompt}</p></div></div><div className="song-grid"><SongCard song={getSong(round.olamideSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /><div className="versus-lockup" aria-hidden="true"><span>HIT</span><strong>VS</strong><span>HIT</span></div><SongCard song={getSong(round.davidoSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /></div><div className="ballot-notice" role="status"><span className="status-led" />{notice}</div>{tallyState === "busy" ? <div className="traffic-notice" role="status"><span className="status-led" /><p>THE ROOM IS BUSY. WE&apos;RE PROTECTING THE TALLY WHILE IT RECOVERS.</p><button onClick={() => void loadGame()} type="button">RETRY NOW ↗</button></div> : null}{game?.viewer.hasVoted ? <div className="share-tools share-tools--after"><a target="_blank" rel="noreferrer" href={xShareUrl(shareText)}>SHARE YOUR PICK ON X ↗</a><button onClick={() => void shareBallot(shareText)} type="button">SHARE YOUR PICK ↗</button></div> : null}{aliasOpen ? <form className="alias-form" onSubmit={saveAlias}><label htmlFor="fan-alias">CLAIM A PUBLIC FAN ALIAS <input id="fan-alias" value={alias} onChange={(event) => setAlias(event.target.value)} minLength={3} maxLength={24} required autoFocus placeholder="e.g. LAGOS TAPE" /></label><button className="pick-button" disabled={submitting}>SAVE ALIAS →</button></form> : null}</section>
     <section className="signal-grid"><RollingPicks events={game?.events ?? []} /><ResultsPanel game={game} /></section>
     <section className="method" id="method"><div className="method__lead"><p className="section-label">THE RECEIPTS</p><h2>Built to keep the argument honest.</h2></div><div className="method__rules"><article><span>01</span><h3>Match context, not hype.</h3><p>Rounds pair records by era, role and cultural job — not a made-up universal score.</p></article><article><span>02</span><h3>Features live in their own room.</h3><p>The main ballot counts lead and co-lead songs only. Features are retained as catalogue records, not main votes.</p></article><article><span>03</span><h3>Every song has a trail.</h3><p>Each index entry carries its year, credited role and a link to the source behind its context.</p></article><article><span>04</span><h3>Your pick earns the reveal.</h3><p>Public pace stays sealed before a verified vote, so the room does not choose for you.</p></article></div></section>
     <Catalogue />
-    <section className="about"><div className="about__sticker">AN INDEPENDENT<br />CULTURAL EXPERIMENT</div><div className="about__copy"><p className="section-label">ABOUT THE PROJECT</p><h2>The conversation had a pulse. We gave it a fair ballot.</h2><p>Beat Ballot was made for fans who care enough to bring a record, a memory and a reason. It is not affiliated with, endorsed by, or speaking for Olamide, Davido, their labels or teams.</p><p>Built by Mojeeb Titilayo — Product Engineer &amp; Strategist — as a BlindspotLab experiment at the intersection of culture, product and participation.</p><a className="text-link" href="https://blindspotlab.com" target="_blank" rel="noreferrer">BLINDSPOTLAB ↗</a></div></section>
-    <footer className="site-footer"><div><a className="wordmark wordmark--footer" href="#top">BEAT<br />BALLOT<span>.</span></a><p>THE SONGS. THE MOMENT. YOUR BALLOT.</p></div><div className="footer-meta"><span>© 2026 BEAT BALLOT</span><span>BLINDSPOTLAB / LAGOS</span><span>UNAFFILIATED WITH THE ARTISTS</span></div></footer>
+    <section className="about"><div className="about__sticker">AN INDEPENDENT<br />CULTURAL EXPERIMENT</div><div className="about__copy"><p className="section-label">ABOUT THE PROJECT</p><h2>The conversation had a pulse. We gave it a fair ballot.</h2><p>Beat Ballot was made for fans who care enough to bring a record, a memory and a reason. It is not affiliated with, endorsed by, or speaking for Olamide, Davido, their labels or teams.</p><p>Built by <a className="inline-link" href="https://mojeeb.xyz" target="_blank" rel="noreferrer">Mojeeb Titilayo</a> — Product Engineer &amp; Strategist — as a BlindspotLab experiment at the intersection of culture, product and participation.</p><div className="about__links"><a className="text-link" href="https://blindspotlab.xyz" target="_blank" rel="noreferrer">BLINDSPOTLAB ↗</a><a className="text-link" href="https://x.com/MojeebMotion" target="_blank" rel="noreferrer">@MOJEEBMOTION ↗</a></div></div></section>
+    <footer className="site-footer"><div><a className="wordmark wordmark--footer" href="#top">BEAT<br />BALLOT<span>.</span></a><p>THE SONGS. THE MOMENT. YOUR BALLOT.</p></div><div className="footer-meta"><span>© 2026 BEAT BALLOT</span><a href="https://blindspotlab.xyz" target="_blank" rel="noreferrer">BLINDSPOTLAB ↗</a><a href="https://mojeeb.xyz" target="_blank" rel="noreferrer">MOJEEB TITILAYO ↗</a><a href="https://x.com/MojeebMotion" target="_blank" rel="noreferrer">@MOJEEBMOTION ↗</a><a href="mailto:hello@mojeeb.xyz?subject=Beat%20Ballot%20marketing%20or%20promotion">MARKETING / PROMOTION ↗</a><Link href="/privacy">PRIVACY</Link><Link href="/terms">TERMS</Link><span>UNAFFILIATED WITH THE ARTISTS</span></div></footer>
   </main>;
 }
