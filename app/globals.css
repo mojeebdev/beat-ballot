@@ -484,12 +484,12 @@ main {
   max-height: calc(100svh - var(--hero-header-height) - var(--hero-strip-height));
   min-height: 0;
   overflow: hidden;
-  padding: clamp(22px, 3.5vh, 38px) clamp(20px, 4vw, 64px) 58px;
+  padding: clamp(22px, 3.5vh, 32px) clamp(20px, 4vw, 64px) 110px;
 }
 .hero::after { background: rgba(9, 21, 16, .66); content: ""; inset: 0 0 0 66%; pointer-events: none; position: absolute; z-index: 0; }
 .hero__meta, .kicker, .hero h1, .hero__proof, .hero__bottom, .hero__scoreline, .bulletin-tape { position: relative; z-index: 2; }
 .hero { display: flex; flex-direction: column; }
-.hero h1 { display: grid; font-size: clamp(72px, 9vw, 150px); grid-template-columns: minmax(0, 1fr) auto; line-height: .67; margin: clamp(14px, 2.5vh, 24px) 0 0 -.07em; max-width: min(54vw, 720px); white-space: normal; }
+.hero h1 { display: grid; font-size: clamp(70px, 8vw, 132px); grid-template-columns: minmax(0, 1fr) auto; line-height: .67; margin: clamp(12px, 2vh, 20px) 0 0 -.07em; max-width: min(54vw, 720px); white-space: normal; }
 .hero-word { display: block; }
 .hero-slash { align-self: center; color: var(--solar); font-family: var(--serif); font-size: .58em; font-style: italic; letter-spacing: -.12em; line-height: .7; padding-left: .02em; }
 .hero__proof { border-left: 1px solid var(--line); display: grid; gap: 18px; left: min(54vw, 800px); max-width: 230px; padding-left: 17px; position: absolute; top: clamp(165px, 25vh, 265px); }
@@ -506,10 +506,10 @@ main {
 .record-index-art li::after { background: var(--solar); content: ""; height: 1px; width: 12px; }
 .record-index-art li.is-current { color: var(--paper); }
 .record-index-art li.is-current::after { background: var(--paper); width: 25px; }
-.kicker { margin: clamp(16px, 3vh, 30px) 0 0; }
-.hero__bottom { align-items: end; display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) minmax(180px, 214px); margin-top: auto; max-width: min(54vw, 720px); padding-bottom: 4px; }
-.hero__statement { font-size: clamp(19px, 2vw, 29px); }
-.hero__season-reel { align-items: center; display: grid; gap: 12px; grid-template-columns: 34px minmax(0, 1fr) 34px; margin-top: 21px; max-width: min(54vw, 680px); position: relative; width: 100%; z-index: 2; }
+.kicker { margin: clamp(14px, 2vh, 22px) 0 0; }
+.hero__bottom { align-items: end; display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(170px, 198px); margin-top: auto; max-width: min(54vw, 720px); padding-bottom: 0; }
+.hero__statement { font-size: clamp(19px, 1.65vw, 25px); max-width: 520px; }
+.hero__season-reel { align-items: center; display: grid; gap: 12px; grid-template-columns: 34px minmax(0, 1fr) 34px; margin-top: 14px; max-width: min(54vw, 680px); position: relative; width: 100%; z-index: 2; }
 .hero__season-reel > button { align-items: center; background: transparent; border: 1px solid var(--line); color: var(--solar); cursor: pointer; display: inline-flex; font: 18px/1 var(--serif); height: 34px; justify-content: center; padding: 0; transition: background 160ms ease, color 160ms ease; width: 34px; }
 .hero__season-reel > button:hover { background: var(--paper); color: var(--void-deep); }
 .hero__season-reel span { color: var(--paper-dim); display: block; font: 9px/1.2 var(--mono); letter-spacing: .075em; }
