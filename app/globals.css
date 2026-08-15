@@ -634,7 +634,7 @@ main {
   .auth-panel { width: 100%; }
   .hero::after { display: none; }
   .hero h1 { max-width: 100%; }
-  .hero__visual { display: block; height: 160px; pointer-events: none; position: absolute; right: 12px; top: 104px; width: 160px; }
+  .hero__visual { display: block; height: clamp(118px, 34vw, 160px); pointer-events: none; position: absolute; right: 12px; top: 104px; width: clamp(118px, 34vw, 160px); }
   .hero__proof { display: none; }
   .record-index-art { display: block; height: 100%; opacity: .52; position: relative; right: auto; top: auto; width: 100%; }
   .record-index-art__vinyl { transform: rotate(-10deg); }
@@ -685,6 +685,10 @@ main {
   .legal-page__content article { min-height: 0; padding: 25px 0 29px; }
   .legal-page__content article:nth-child(even) { border-left: 0; padding-left: 0; }
   .fan-passport { min-height: 560px; }
+}
+
+@media (max-width: 380px) {
+  .bulletin-tape span:last-child { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
