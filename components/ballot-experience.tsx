@@ -232,14 +232,20 @@ export function BallotExperience() {
     <div className="noise" aria-hidden="true" />
     <header className="site-header"><a className="wordmark" href="#top" aria-label="Beat Ballot home">BEAT<br />BALLOT<span>.</span></a><div className="header-status"><span className="status-led" /><span>{headerStatus}</span></div><nav aria-label="Primary navigation"><a href="#arena">ARENA</a><Link href="/season-01">SEASON</Link><Link href="/catalogue">INDEX</Link><Link href="/method">METHOD</Link>{game?.viewer.signedIn ? <button className="nav-button" onClick={() => void signOut()}>SIGN OUT</button> : <Link href="/auth/sign-in?returnTo=/#arena">SIGN IN</Link>}</nav><MobileNav items={homeLinks} signedIn={Boolean(game?.viewer.signedIn)} onSignOut={() => void signOut()} /></header>
     <section className="hero" id="top">
-      <RecordIndexArt />
-      <div className="hero__meta"><span>NIGERIA / 2026</span><span>SEASON 01</span></div>
-      <p className="kicker">A FAN-LED CULTURAL EXPERIMENT</p>
-      <h1><span className="hero-word">HIT</span><span className="hero-slash">{"//"}</span><span className="hero-word">FOR</span><span className="hero-slash">{"//"}</span><span className="hero-word">HIT</span></h1>
-      <div className="hero__proof"><span>THE CULTURE VOTES.</span><strong>ONE PICK.<br />REAL IMPACT.<br />EVERY ROUND.</strong><small>NOT AN OFFICIAL<br />ARTIST BATTLE.</small></div>
+      <div className="hero__content">
+        <div className="hero__meta"><span>NIGERIA / 2026</span><span>SEASON 01</span></div>
+        <p className="kicker">A FAN-LED CULTURAL EXPERIMENT</p>
+        <h1><span className="hero-word">HIT</span><span className="hero-word">FOR</span><span className="hero-word">HIT</span></h1>
+        <a className="arrow-action hero__cta" href="#arena">CAST YOUR PICK <span>↓</span></a>
+      </div>
+      <div className="hero__visual">
+        <div className="hero__proof">
+          <span className="hero__slash-mark">{"//"}</span>
+          <div className="hero__proof-copy"><span>THE CULTURE VOTES.</span><strong>ONE PICK.<br />REAL IMPACT.<br />EVERY ROUND.</strong><small>NOT AN OFFICIAL<br />ARTIST BATTLE.</small></div>
+        </div>
+        <RecordIndexArt />
+      </div>
       <BulletinTape />
-      <div className="hero__actions hero__actions--landing"><a className="arrow-action" href="#arena">CAST YOUR PICK <span>↓</span></a></div>
-      <div className="hero__scoreline"><div><span>01</span> OLAMIDE</div><span className="scoreline-vs">VS</span><div>DAVIDO <span>02</span></div></div>
     </section>
     <section className="statement-strip"><span>NO INDUSTRY PANEL.</span><span>NO FAN-WAR ALGORITHM.</span><span>JUST RECEIPTS, CONTEXT &amp; YOUR PICK.</span></section>
     <section className="arena" id="arena"><div className="arena__heading"><div><p className="section-label">CURRENT BALLOT / {String(game?.round.number ?? 1).padStart(2, "0")} / 05</p><h2>{game?.round.title ?? round.title}</h2></div><div className="arena__prompt"><span>{game?.round.lens ?? round.lens}</span><p>{game?.round.prompt ?? round.prompt}</p></div></div><div className="song-grid"><SongCard song={getSong(round.olamideSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /><div className="versus-lockup" aria-hidden="true"><span>HIT</span><strong>VS</strong><span>HIT</span></div><SongCard song={getSong(round.davidoSongId)} disabled={submitting || Boolean(game?.viewer.hasVoted)} onPick={handlePick} /></div><div className="ballot-notice" role="status"><span className="status-led" />{notice}</div>{tallyState === "capacity" ? <div className="traffic-notice" role="status"><span className="status-led" /><p>THE ROOM IS BUSY. WE&apos;RE PROTECTING THE TALLY WHILE IT RECOVERS.</p><button onClick={() => void loadGame()} type="button">RETRY NOW ↗</button></div> : null}{game?.viewer.hasVoted ? <><div className="share-tools share-tools--after"><a target="_blank" rel="noreferrer" href={xShareUrl(shareText)}>SHARE YOUR PICK ON X ↗</a><button onClick={() => void shareBallot(shareText)} type="button">SHARE YOUR PICK ↗</button></div><section className="season-preview" aria-label="Season 01 rotating matchup preview"><p className="section-label">SEASON 01 / ON THE TAPE</p><div className="season-preview__reel"><button aria-label="Show previous Season 01 round" onClick={() => changePreview(-1)} type="button">←</button><div><span>ROUND {previewRound.number} / 05</span><strong>{previewOlamide.title} <i>VS</i> {previewDavido.title}</strong></div><button aria-label="Show next Season 01 round" onClick={() => changePreview(1)} type="button">→</button></div></section></> : null}{aliasOpen ? <form className="alias-form" onSubmit={saveAlias}><label htmlFor="fan-alias">CLAIM A PUBLIC FAN ALIAS <input id="fan-alias" value={alias} onChange={(event) => setAlias(event.target.value)} minLength={3} maxLength={24} required autoFocus placeholder="e.g. LAGOS TAPE" /></label><button className="pick-button" disabled={submitting}>SAVE ALIAS →</button></form> : null}</section>
